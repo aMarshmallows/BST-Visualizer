@@ -3,6 +3,7 @@ var svgns = "http://www.w3.org/2000/svg"
 var insertButton = document.getElementById("insertButton");
 var findButton = document.getElementById("findButton");
 var deleteButton = document.getElementById("deleteButton");
+var root = null;
 
 
 class Node {
@@ -11,8 +12,8 @@ class Node {
         this.left = null;
         this.right = null;
         // each node holds it's own coordinates
-        this.height = 0;
-        // if height = 1, 400 / 2 either left or right of parent node's x value
+        this.cx = 0;
+        this.cy = 0;
     }
 }
 
@@ -20,13 +21,13 @@ class Node {
 function createNodeInDOM(data, cx, cy) {
     const nodeCircle = document.createElementNS(svgns, "circle");
     svg.appendChild(nodeCircle);
-    nodeCircle.setAttribute("cx",cx);
-    nodeCircle.setAttribute("cy",cy);
-    nodeCircle.setAttribute("r","25");
-    nodeCircle.setAttribute("stroke","green");
-    nodeCircle.setAttribute("stroke-width","4");
-    nodeCircle.setAttribute("fill","yellow");
-    
+    nodeCircle.setAttribute("cx", cx);
+    nodeCircle.setAttribute("cy", cy);
+    nodeCircle.setAttribute("r", "25");
+    nodeCircle.setAttribute("stroke", "green");
+    nodeCircle.setAttribute("stroke-width", "4");
+    nodeCircle.setAttribute("fill", "yellow");
+
     const nodeText = document.createElementNS(svgns, "text");
     svg.appendChild(nodeText);
     nodeText.setAttribute("x", cx);
@@ -37,17 +38,7 @@ function createNodeInDOM(data, cx, cy) {
 
 }
 
-function createRoot(data) {
-    const newNode = document.createElement("circle");
-    createNode(data)
-    newNode.cx = "400";
-    newNode.cy = "100";
-    
-
-
-    
-
-}
+//function createEdgeInDOM(parentCx, parentCy,)
 
 // Binary Search tree class
 class BinarySearchTree {
@@ -62,27 +53,40 @@ class BinarySearchTree {
         // if root is null then node will
         // be added to the tree and made root.
         if (this.root === null) {
+            newNode.cx = "400";
+            newNode.cy = "100";
             this.root = newNode;
+
+            createNodeInDOM(data, newNode.cx, newNode.cy);
         }
         else {
             // find the correct position in the
             // tree and add the node
-            this.insertNode(this.root, newNode);
+            this.insertNode(this.root, newNode, 1);
         }
     }
+
+    //calcCxCy(parentNode)
 
     // Method to insert a node in a tree
     // it moves over the tree to find the location
     // to insert a node with a given data
-    insertNode(node, newNode) {
+    insertNode(node, newNode, height) {
         if (newNode.data < node.data) {
             // if left is null insert node here
-            if (node.left === null)
+            if (node.left === null) {
                 node.left = newNode;
+                newNode.cx = (parseInt(node.cx) - 400 * (Math.pow(0.5, height))).toString();
+                newNode.cy = (parseInt(node.cy) + 160).toString();
+                console.log(newNode.cx);
+                createNodeInDOM(newNode.data, newNode.cx, newNode.cy);
+            }
 
-            else
+            else {
                 // find null by recursion
-                this.insertNode(node.left, newNode);
+                this.insertNode(node.left, newNode, height + 1);
+            }
+
         }
 
         // if the data is more than the node
@@ -91,10 +95,14 @@ class BinarySearchTree {
             // if right is null insert node here
             if (node.right === null) {
                 node.right = newNode;
+                newNode.cx = (parseInt(node.cx) + 400 * (Math.pow(0.5, height))).toString();
+                newNode.cy = (parseInt(node.cy) + 160).toString();
+                console.log(newNode.cx);
+                createNodeInDOM(newNode.data, newNode.cx, newNode.cy);
             }
             else {
                 // find null by recursion
-                this.insertNode(node.right, newNode);
+                this.insertNode(node.right, newNode, height + 1);
             }
         }
     }
@@ -117,15 +125,18 @@ class BinarySearchTree {
 const svgWidth = 800;
 const svgHeight = 800;
 
+var thisTree = new BinarySearchTree();
 
-
-insertButton.onclick = function insert() {
+insertButton.onclick = function insertVal() {
     // get new node value from input button
     var newNodeVal = document.getElementById("insertInput").value;
-    console.log("value inside is: "+newNodeVal);
-    createNodeInDOM(newNodeVal, "50", "50");
+    //createNodeInDOM(newNodeVal, "50", "50");
+    thisTree.insert(newNodeVal);
 
 }
+
+
+
 
 //<circle cx="50" cy="50" r="25" stroke="green" stroke-width="4" fill="yellow" />
 //<text x="50" y="50" dominant-baseline="middle" text-anchor="middle">TEXT</text>

@@ -1,0 +1,56 @@
+header {
+  width: 100%;
+  height: 150px;
+  background-color: antiquewhite;
+  justify-content: center;
+}
+
+body {
+  width: 100%;
+}
+
+main {
+  display: flex;
+  width: 100%;
+  height: 800px;
+  background-color: aqua;
+  justify-content: center;
+}
+
+nav {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  height: 800px;
+  background-color: green;
+  padding: 10px;
+  justify-content: space-around;
+}
+
+.buttons {
+  background-color: #8fd63e;
+  border: 0;
+  border-radius: 4px;
+  color: rgb(71, 28, 22);
+  font-family: "Courier New", "Courier", serif;
+  font-weight: bold;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  transition-duration: 0.4s;
+}
+
+.buttons:hover {
+  background-color: #6cca63;
+}
+input {
+  height: 48.5px;
+}
+
+svg {
+  width: 800px;
+  height: 800px;
+  background-color: pink;
+}

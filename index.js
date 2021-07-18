@@ -23,7 +23,18 @@ function createNodeInDOM(data, cx, cy) {
     svg.appendChild(nodeCircle);
     nodeCircle.setAttribute("cx", cx);
     nodeCircle.setAttribute("cy", cy);
-    nodeCircle.setAttribute("r", "25");
+
+    // decrease circle radius as height increases
+    let height = (parseInt(cy) - 100) / 80;
+    let radius = 25;
+    if (height > 4) {
+        radius = 12.5.toString();
+    }
+    else {
+        radius = (30 - height * 3).toString();
+    }
+
+    nodeCircle.setAttribute("r", radius);
     nodeCircle.setAttribute("stroke", "green");
     nodeCircle.setAttribute("stroke-width", "4");
     nodeCircle.setAttribute("fill", "yellow");
@@ -38,6 +49,7 @@ function createNodeInDOM(data, cx, cy) {
 
 }
 
+//
 //function createEdgeInDOM(parentCx, parentCy,)
 
 // Binary Search tree class
@@ -68,16 +80,18 @@ class BinarySearchTree {
 
     //calcCxCy(parentNode)
 
-    // Method to insert a node in a tree
-    // it moves over the tree to find the location
-    // to insert a node with a given data
     insertNode(node, newNode, height) {
+        console.log("prev node val: " + node.data);
+        console.log("curr node data: " + newNode.data);
+        console.log(typeof node.data);
+        console.log(typeof newNode.data);
         if (newNode.data < node.data) {
             // if left is null insert node here
-            if (node.left === null) {
+            if (node.left == null) {
+                console.log("node going left");
                 node.left = newNode;
                 newNode.cx = (parseInt(node.cx) - 400 * (Math.pow(0.5, height))).toString();
-                newNode.cy = (parseInt(node.cy) + 160).toString();
+                newNode.cy = (parseInt(node.cy) + 80).toString();
                 console.log(newNode.cx);
                 createNodeInDOM(newNode.data, newNode.cx, newNode.cy);
             }
@@ -91,12 +105,12 @@ class BinarySearchTree {
 
         // if the data is more than the node
         // data move right of the tree
-        else {
+        else if (newNode.data > node.data) {
             // if right is null insert node here
-            if (node.right === null) {
+            if (node.right == null) {
                 node.right = newNode;
                 newNode.cx = (parseInt(node.cx) + 400 * (Math.pow(0.5, height))).toString();
-                newNode.cy = (parseInt(node.cy) + 160).toString();
+                newNode.cy = (parseInt(node.cy) + 80).toString();
                 console.log(newNode.cx);
                 createNodeInDOM(newNode.data, newNode.cx, newNode.cy);
             }
@@ -130,8 +144,9 @@ var thisTree = new BinarySearchTree();
 insertButton.onclick = function insertVal() {
     // get new node value from input button
     var newNodeVal = document.getElementById("insertInput").value;
+    console.log("valeu in node is: " + newNodeVal);
     //createNodeInDOM(newNodeVal, "50", "50");
-    thisTree.insert(newNodeVal);
+    thisTree.insert(parseInt(newNodeVal));
 
 }
 

@@ -29,29 +29,96 @@ function getRadius(cy) {
     return radius;
 }
 
+function wait() {
+    const list = [1, 2, 3, 4]
+    const task = async () => {
+        for (const item of list) {
+            await new Promise(r => setTimeout(r, 1000));
+            console.log('Yello, D\'oh');
+        }
+    }
+}
+
 // creates the circle and centers text within for a node
-function createNodeInDOM(data, cx, cy) {
+function createNodeInDOM(node, animating) {
     let height, radius = 0;
     const nodeCircle = document.createElementNS(svgns, "circle");
     svg.appendChild(nodeCircle);
-    nodeCircle.setAttribute("cx", cx);
-    nodeCircle.setAttribute("cy", cy);
+    nodeCircle.setAttribute("cx", node.cx);
+    nodeCircle.setAttribute("cy", node.cy);
 
     // decrease circle radius as height increases
 
-    nodeCircle.setAttribute("r", getRadius(cy).toString());
+    nodeCircle.setAttribute("r", getRadius(node.cy).toString());
     nodeCircle.setAttribute("stroke", "green");
-    nodeCircle.setAttribute("stroke-width", "4");
+    nodeCircle.setAttribute("stroke-width", "2");
     nodeCircle.setAttribute("fill", "yellow");
 
     const nodeText = document.createElementNS(svgns, "text");
     svg.appendChild(nodeText);
-    nodeText.setAttribute("x", cx);
-    nodeText.setAttribute("y", cy);
+    nodeText.setAttribute("x", node.cx);
+    nodeText.setAttribute("y", node.cy);
     nodeText.setAttribute("dominant-baseline", "middle");
     nodeText.setAttribute("text-anchor", "middle");
-    nodeText.innerHTML = data;
+    nodeText.innerHTML = node.data;
 
+    if (animating) {
+        nodeCircle.setAttribute("id", "animatingNode");
+        nodeCircle.setAttribute("fill", "white");
+        nodeCircle.setAttribute("r", "15");
+        nodeCircle.setAttribute("cx", "400");
+        nodeCircle.setAttribute("cy", "80");
+
+        nodeText.setAttribute("id", "animatingText");
+        nodeText.setAttribute("x", "400");
+        nodeText.setAttribute("y", "80");
+    }
+
+}
+
+
+function animateNode(parentNode, currNode, isFinalMove) {
+    currNodeCxInt = parseInt(currNode.cx);
+    currNodeCyInt = parseInt(currNode.cy);
+    parentNodeCxInt = parseInt(parentNode.cx);
+    parentNodeCyInt = parseInt(parentNode.cy);
+    // get temp variables from DOM
+    const animNode = document.getElementById("animatingNode");
+    const animText = document.getElementById("animatingText");
+
+    // y distance to travel - always positive
+    let diffY = currNodeCyInt - parentNodeCyInt;
+    // x distance to travel, positive if currNode on right of parentNode
+    let diffX = currNodeCxInt - parentNodeCxInt;
+
+    let startTime = 0;
+    const totalTime = 2000; // 1000ms = 1s
+    const animateStep = (timestamp) => {
+        if (!startTime) startTime = timestamp;
+        // progress goes from 0 to 1 over 1s
+        const progress = (timestamp - startTime) / totalTime;
+        // move right 100 px
+        animNode.setAttributeNS(null, 'cx', parentNodeCxInt + (diffX * progress));
+        animNode.setAttributeNS(null, 'cy', (parentNodeCyInt - 20) + (diffY * progress));
+        animText.setAttributeNS(null, 'x', parentNodeCxInt + (diffX * progress));
+        animText.setAttributeNS(null, 'y', (parentNodeCyInt - 20) + (diffY * progress));
+        if (progress < 1) {
+            window.requestAnimationFrame(animateStep);
+            console.log("progress happening");
+        }
+        else if (isFinalMove) {
+            console.log("progress complete!");
+            animNode.remove();
+            animText.remove();
+            createNodeInDOM(currNode, 0);
+        }
+        else {
+            console.log("progress complete!");
+            animNode.remove();
+            animText.remove();
+        }
+    }
+    window.requestAnimationFrame(animateStep);
 }
 
 //
@@ -66,10 +133,8 @@ function createEdgeInDOM(parentNode, currNode) {
     svg.appendChild(edge);
     edge.setAttribute("style", "stroke:rgb(0,0,0);stroke-width:3");
 
-    // gets radius of currNode
+    // gets radius of currNode and parentNode
     currRadius = getRadius(currNode.cy);
-
-    // gets radius of parentNode
     parentRadius = getRadius(parentNode.cy);
 
 
@@ -88,7 +153,6 @@ function createEdgeInDOM(parentNode, currNode) {
     y2 = currNodeCyInt - Math.sqrt(currRadius * currRadius * cyProportion);
     y1 = parentNodeCyInt + Math.sqrt(parentRadius * parentRadius * cyProportion);
 
-    // 
     if (currNodeCxInt < parentNodeCxInt) {
         x1 = parentNodeCxInt - Math.sqrt(parentRadius * parentRadius * cxProportion)
         x2 = currNodeCxInt + Math.sqrt(parentRadius * parentRadius * cxProportion);
@@ -122,11 +186,11 @@ class BinarySearchTree {
             newNode.cy = "100";
             this.root = newNode;
 
-            createNodeInDOM(data, newNode.cx, newNode.cy);
+            createNodeInDOM(newNode, 0);
         }
         else {
-            // find the correct position in the
-            // tree and add the node
+
+            createNodeInDOM(newNode, 1);
             this.insertNode(this.root, newNode, 1);
         }
     }
@@ -140,16 +204,18 @@ class BinarySearchTree {
                 node.left = newNode;
                 newNode.cx = (parseInt(node.cx) - 400 * (Math.pow(0.5, height))).toString();
                 newNode.cy = (parseInt(node.cy) + 80).toString();
-                createEdgeInDOM(node, newNode);
-                createNodeInDOM(newNode.data, newNode.cx, newNode.cy);
 
+                //createNodeInDOM(newNode, 1);
+                animateNode(node, newNode, 1);
+                createEdgeInDOM(node, newNode);
             }
 
             else {
+                //createNodeInDOM(newNode, 1);
+                animateNode(node, newNode, 0);
                 // find null by recursion
                 this.insertNode(node.left, newNode, height + 1);
             }
-
         }
 
         // if the data is more than the node
@@ -160,11 +226,15 @@ class BinarySearchTree {
                 node.right = newNode;
                 newNode.cx = (parseInt(node.cx) + 400 * (Math.pow(0.5, height))).toString();
                 newNode.cy = (parseInt(node.cy) + 80).toString();
+
+                //createNodeInDOM(newNode, 1);
+                animateNode(node, newNode, 1);
                 createEdgeInDOM(node, newNode);
-                createNodeInDOM(newNode.data, newNode.cx, newNode.cy);
 
             }
             else {
+                //createNodeInDOM(newNode, 1);
+                animateNode(node, newNode, 0);
                 // find null by recursion
                 this.insertNode(node.right, newNode, height + 1);
             }
@@ -195,6 +265,15 @@ insertButton.onclick = function insertVal() {
     // get new node value from input button
     var newNodeVal = document.getElementById("insertInput").value;
     console.log("valeu in node is: " + newNodeVal);
+    //createNodeInDOM(newNodeVal, "50", "50");
+    thisTree.insert(parseInt(newNodeVal));
+
+}
+
+findButton.onclick = function findVal() {
+    // get new node value from input button
+    var findVal = document.getElementById("findInput").value;
+    console.log("value to find is: " + findVal);
     //createNodeInDOM(newNodeVal, "50", "50");
     thisTree.insert(parseInt(newNodeVal));
 

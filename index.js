@@ -29,14 +29,12 @@ function getRadius(cy) {
     return radius;
 }
 
-function wait() {
-    const list = [1, 2, 3, 4]
-    const task = async () => {
-        for (const item of list) {
-            await new Promise(r => setTimeout(r, 1000));
-            console.log('Yello, D\'oh');
-        }
-    }
+function nodeNotFoundPopUp(nodeVal) {
+    alert(nodeVal + " could not be found in the current tree.");
+}
+
+function noDuplicatesPopUp(newNodeVal) {
+    alert("This tree already includes " + newNodeVal + " and BSTs do not allow duplicates. Please try a different number.");
 }
 
 // creates the circle and centers text within for a node
@@ -76,13 +74,12 @@ function createNodeInDOM(node, animating) {
 
 }
 
-
 function animateNode(parentNode, currNode, isFinalMove) {
     currNodeCxInt = parseInt(currNode.cx);
     currNodeCyInt = parseInt(currNode.cy);
     parentNodeCxInt = parseInt(parentNode.cx);
     parentNodeCyInt = parseInt(parentNode.cy);
-    // get temp variables from DOM
+    // get elements from DOM to animate - a text element and a circle element
     const animNode = document.getElementById("animatingNode");
     const animText = document.getElementById("animatingText");
 
@@ -92,16 +89,19 @@ function animateNode(parentNode, currNode, isFinalMove) {
     let diffX = currNodeCxInt - parentNodeCxInt;
 
     let startTime = 0;
-    const totalTime = 2000; // 1000ms = 1s
+    const totalTime = 1000; // 1000ms = 1s
     const animateStep = (timestamp) => {
         if (!startTime) startTime = timestamp;
+
         // progress goes from 0 to 1 over 1s
         const progress = (timestamp - startTime) / totalTime;
-        // move right 100 px
+        // change circle cx and cy values to move diagonally
         animNode.setAttributeNS(null, 'cx', parentNodeCxInt + (diffX * progress));
         animNode.setAttributeNS(null, 'cy', (parentNodeCyInt - 20) + (diffY * progress));
+        // do the same for the text but x and y instead of cx and cy
         animText.setAttributeNS(null, 'x', parentNodeCxInt + (diffX * progress));
         animText.setAttributeNS(null, 'y', (parentNodeCyInt - 20) + (diffY * progress));
+
         if (progress < 1) {
             window.requestAnimationFrame(animateStep);
             console.log("progress happening");
@@ -121,7 +121,6 @@ function animateNode(parentNode, currNode, isFinalMove) {
     window.requestAnimationFrame(animateStep);
 }
 
-//
 function createEdgeInDOM(parentNode, currNode) {
     currNodeCxInt = parseInt(currNode.cx);
     currNodeCyInt = parseInt(currNode.cy);
@@ -145,7 +144,6 @@ function createEdgeInDOM(parentNode, currNode) {
     Math.hypot(cyDif, cxDif);
     // calculates angle from currNode to parentNode from x axis (no negatives)
     angle = Math.atan(cyDif / cxDif) * (180 / Math.PI);
-    console.log(angle);
     // the percent of 625 that should be change in cy and in cx
     cyProportion = angle / 90;
     cxProportion = 1 - cyProportion;
@@ -241,33 +239,61 @@ class BinarySearchTree {
         }
     }
 
-    removeNode(node) {
-        // will perform on the selected node
-
-
+    find(nodeVal) {
+        if (this.root == null) {
+            nodeNotFoundPopUp(nodeVal);
+        }
+        else {
+            this.findNode(this.root, nodeVal);
+        }
     }
 
-    // Helper function
-    // findMinNode()
-    // getRootNode()
-    // inorder(node)
-    // preorder(node)              
-    // postorder(node)
-    // search(node, data)
+    findNode(root, nodeVal) {
+        if (nodeVal < root.data) {
+            if (root.left == null) {
+                nodeNotFoundPopUp(nodeVal);
+            }
+            else {
+                this.findNode(root.left, nodeVal);
+            }
+            
+            
+        }
+        else if (nodeVal > root.data) {
+            if (root.right == null) {
+                nodeNotFoundPopUp(nodeVal);
+            }
+            else {
+                this.findNode(root.right, nodeVal);
+            }
+            
+        }
+        else if (nodeVal == root.data) {
+
+        }
+    }
+
 }
 
-const svgWidth = 800;
-const svgHeight = 800;
+
 
 var thisTree = new BinarySearchTree();
+const tree = [];
 
 insertButton.onclick = function insertVal() {
     // get new node value from input button
     var newNodeVal = document.getElementById("insertInput").value;
-    console.log("valeu in node is: " + newNodeVal);
-    //createNodeInDOM(newNodeVal, "50", "50");
-    thisTree.insert(parseInt(newNodeVal));
 
+    // check for duplicates using tree array
+    if (tree.includes(newNodeVal)) {
+        noDuplicatesPopUp(newNodeVal);
+    }
+    else {
+        tree.push(newNodeVal);
+        console.log("value in node is: " + newNodeVal);
+        //createNodeInDOM(newNodeVal, "50", "50");
+        thisTree.insert(parseInt(newNodeVal));
+    }
 }
 
 findButton.onclick = function findVal() {
@@ -275,7 +301,7 @@ findButton.onclick = function findVal() {
     var findVal = document.getElementById("findInput").value;
     console.log("value to find is: " + findVal);
     //createNodeInDOM(newNodeVal, "50", "50");
-    thisTree.insert(parseInt(newNodeVal));
+    thisTree.find(parseInt(findVal));
 
 }
 

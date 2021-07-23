@@ -27,6 +27,47 @@ nav {
   justify-content: space-around;
 }
 
+.slider {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+#slider {
+  -webkit-appearance: none;
+  width: 280px;
+  height: 7px;
+  outline: none;
+  border-radius: 3px;
+  background: rgb(240, 113, 9);
+}
+
+#slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  background: rgb(71, 28, 22);
+  border-radius: 50%;
+  z-index: 3;
+}
+
+#SelectValue {
+  width: 35px;
+  height: 22.5px;
+  top: 0;
+  background-color: #8fd63e;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: rgb(71, 28, 22);
+  font-family: "Courier New", "Courier", serif;
+}
+
 .buttons {
   background-color: #8fd63e;
   border: 0;

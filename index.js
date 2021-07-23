@@ -1,9 +1,10 @@
-var svg = document.getElementById("svg");
-var svgns = "http://www.w3.org/2000/svg";
-var insertButton = document.getElementById("insertButton");
-var findButton = document.getElementById("findButton");
-var deleteButton = document.getElementById("deleteButton");
-var root = null;
+const svg = document.getElementById("svg");
+const svgns = "http://www.w3.org/2000/svg";
+const randoGenButton = document.getElementById("randoGenButton");
+const insertButton = document.getElementById("insertButton");
+const findButton = document.getElementById("findButton");
+const deleteButton = document.getElementById("deleteButton");
+let root = null;
 
 class Node {
   constructor(data) {
@@ -22,7 +23,7 @@ class Node {
 
 function getRadius(cy) {
   let radius = 0;
-  let height = (parseInt(cy) - 100) / 80;
+  const height = (parseInt(cy) - 100) / 80;
   if (height > 4) {
     radius = 12.5;
   } else {
@@ -44,8 +45,9 @@ function noDuplicatesPopUp(newNodeVal) {
 }
 
 // creates the circle and centers text within
-// different values depending if node is a temp animating node or a permanant one
+// different attributes depending if node is a temp animating node or a permanant one
 // id is set only if animating node
+// sets node.domNode and node.domText
 function createNodeInDOM(node, animating) {
   let height,
     radius = 0;
@@ -130,13 +132,50 @@ function animateNode(parentNode, currNode, isFinalMove) {
   window.requestAnimationFrame(animateStep);
 }
 
-function animateNode2(node, text, startX, startY, endX, endY, callback) {
+function animateNode2(node, text, startX, startY, endX, endY, speed, callback) {
   let startTime, previousTimeStamp;
   // y distance to travel - always positive
   const diffY = endY - startY;
   // x distance to travel, positive if currNode on right of parentNode
   const diffX = endX - startX;
-  const totalTime = 2000;
+  const totalTime = speed;
+
+  function step(timestamp) {
+    if (startTime === undefined) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+
+    if (previousTimeStamp !== timestamp) {
+      // progress goes from 0 to 1 over 1s
+      const progress = (timestamp - startTime) / totalTime;
+      // change circle cx and cy values to move diagonally
+      node.setAttributeNS(null, "cx", startX + diffX * progress);
+      node.setAttributeNS(null, "cy", startY - 20 + diffY * progress);
+      // do the same for the text but x and y instead of cx and cy
+      text.setAttributeNS(null, "x", startX + diffX * progress);
+      text.setAttributeNS(null, "y", startY - 20 + diffY * progress);
+    }
+
+    if (elapsed < totalTime) {
+      // Stop the animation after 2 seconds
+      previousTimeStamp = timestamp;
+      window.requestAnimationFrame(step);
+    } else {
+      if (callback) {
+        callback();
+      }
+    }
+  }
+
+  window.requestAnimationFrame(step);
+}
+
+function animateFind(node, text, startX, startY, endX, endY, speed, callback) {
+  let startTime, previousTimeStamp;
+  // y distance to travel - always positive
+  const diffY = endY - startY;
+  // x distance to travel, positive if currNode on right of parentNode
+  const diffX = endX - startX;
+  const totalTime = speed;
 
   function step(timestamp) {
     if (startTime === undefined) startTime = timestamp;
@@ -227,7 +266,8 @@ class BinarySearchTree {
   }
 
   // creates new node to be inserted and calls insertNode
-  insert(data) {
+  // if animating, will create the temp animating node
+  insert(data, animating) {
     const newNode = new Node(data);
     // if root is null then node will
     // be added to the tree and made root.
@@ -237,13 +277,15 @@ class BinarySearchTree {
       this.root = newNode;
 
       createNodeInDOM(newNode, false);
-    } else {
+    } else if (animating) {
       createNodeInDOM(newNode, true);
-      this.insertNode(this.root, newNode, 1);
+      this.insertNode(this.root, newNode, 1, true);
+    } else {
+      this.insertNode(this.root, newNode, 1, false);
     }
   }
 
-  insertNode(node, newNode, height) {
+  insertNode(node, newNode, height, animating) {
     if (newNode.data < node.data) {
       // if left is null insert node here
       if (node.left == null) {
@@ -254,35 +296,45 @@ class BinarySearchTree {
         ).toString();
         newNode.cy = (parseInt(node.cy) + 80).toString();
 
-        //createNodeInDOM(newNode, 1);
-        animateNode2(
-          newNode.domNode,
-          newNode.domText,
-          parseInt(node.cx),
-          parseInt(node.cy),
-          parseInt(newNode.cx),
-          parseInt(newNode.cy),
-          () => {
-            newNode.domNode.remove();
-            newNode.domText.remove();
-            createNodeInDOM(newNode, false);
-            createEdgeInDOM(node, newNode);
-          }
-        );
+        if (animating) {
+          animateNode2(
+            newNode.domNode,
+            newNode.domText,
+            parseInt(node.cx),
+            parseInt(node.cy),
+            parseInt(newNode.cx),
+            parseInt(newNode.cy),
+            slider.value,
+            () => {
+              newNode.domNode.remove();
+              newNode.domText.remove();
+              createNodeInDOM(newNode, false);
+              createEdgeInDOM(node, newNode);
+            }
+          );
+        } else {
+          createNodeInDOM(newNode, false);
+          createEdgeInDOM(node, newNode);
+        }
       } else {
         //createNodeInDOM(newNode, 1);
-        animateNode2(
-          newNode.domNode,
-          newNode.domText,
-          parseInt(node.cx),
-          parseInt(node.cy),
-          parseInt(node.left.cx),
-          parseInt(node.left.cy),
-          () => {
-            // find null by recursion
-            this.insertNode(node.left, newNode, height + 1);
-          }
-        );
+        if (animating) {
+          animateNode2(
+            newNode.domNode,
+            newNode.domText,
+            parseInt(node.cx),
+            parseInt(node.cy),
+            parseInt(node.left.cx),
+            parseInt(node.left.cy),
+            slider.value,
+            () => {
+              // find null by recursion
+              this.insertNode(node.left, newNode, height + 1, true);
+            }
+          );
+        } else {
+          this.insertNode(node.left, newNode, height + 1, false);
+        }
       }
     }
 
@@ -298,35 +350,45 @@ class BinarySearchTree {
         ).toString();
         newNode.cy = (parseInt(node.cy) + 80).toString();
 
-        //createNodeInDOM(newNode, 1);
-        animateNode2(
-          newNode.domNode,
-          newNode.domText,
-          parseInt(node.cx),
-          parseInt(node.cy),
-          parseInt(newNode.cx),
-          parseInt(newNode.cy),
-          () => {
-            newNode.domNode.remove();
-            newNode.domText.remove();
-            createNodeInDOM(newNode, false);
-            createEdgeInDOM(node, newNode);
-          }
-        );
+        if (animating) {
+          animateNode2(
+            newNode.domNode,
+            newNode.domText,
+            parseInt(node.cx),
+            parseInt(node.cy),
+            parseInt(newNode.cx),
+            parseInt(newNode.cy),
+            slider.value,
+            () => {
+              newNode.domNode.remove();
+              newNode.domText.remove();
+              createNodeInDOM(newNode, false);
+              createEdgeInDOM(node, newNode);
+            }
+          );
+        } else {
+          createNodeInDOM(newNode, false);
+          createEdgeInDOM(node, newNode);
+        }
       } else {
         //createNodeInDOM(newNode, 1);
-        animateNode2(
-          newNode.domNode,
-          newNode.domText,
-          parseInt(node.cx),
-          parseInt(node.cy),
-          parseInt(node.right.cx),
-          parseInt(node.right.cy),
-          () => {
-            // find null by recursion
-            this.insertNode(node.right, newNode, height + 1);
-          }
-        );
+        if (animating) {
+          animateNode2(
+            newNode.domNode,
+            newNode.domText,
+            parseInt(node.cx),
+            parseInt(node.cy),
+            parseInt(node.right.cx),
+            parseInt(node.right.cy),
+            slider.value,
+            () => {
+              // find null by recursion
+              this.insertNode(node.right, newNode, height + 1, true);
+            }
+          );
+        } else {
+          this.insertNode(node.right, newNode, height + 1, false);
+        }
       }
     }
   }
@@ -357,6 +419,39 @@ class BinarySearchTree {
   }
 }
 
+function changeSpeed() {
+  let val = this.value;
+  time = (val / 1000).toFixed(1);
+  document.getElementById("SelectValue").innerHTML = time;
+}
+
+function removeAllChildNodes(parent) {
+  while (parent.firstChild) {
+    parent.removeChild(parent.firstChild);
+  }
+}
+
+function randoTreeGen() {
+  thisTree = new BinarySearchTree();
+  removeAllChildNodes(svg);
+  tree = [];
+  // num of nodes should be between 3 and 25
+  // create list of num random numbers between 1 and 100 to enter
+  // do a for loop calling insert but without the animation
+  const numNodes = Math.random() * (25 - 3) + 3; // range is 3 to 25
+  for (let i = 0; i < numNodes; i++) {
+    let nodeVal = Math.random() * (100 - 1) + 1;
+
+    while (tree.includes(nodeVal)) {
+      nodeVal = Math.random() * (100 - 1) + 1;
+    }
+    tree.push(nodeVal);
+    console.log("value in node is: " + nodeVal);
+    //createNodeInDOM(newNodeVal, "50", "50");
+    thisTree.insert(parseInt(nodeVal), false);
+  }
+}
+
 function insertVal() {
   // get new node value from input button
   const newNodeVal = document.getElementById("insertInput").value;
@@ -368,7 +463,7 @@ function insertVal() {
     tree.push(newNodeVal);
     console.log("value in node is: " + newNodeVal);
     //createNodeInDOM(newNodeVal, "50", "50");
-    thisTree.insert(parseInt(newNodeVal));
+    thisTree.insert(parseInt(newNodeVal), true);
   }
 }
 
@@ -380,8 +475,13 @@ function findVal() {
   thisTree.find(parseInt(findVal));
 }
 
-var thisTree = new BinarySearchTree();
-const tree = [];
+let thisTree = new BinarySearchTree();
+let tree = [];
+
+// slider value gives num of grid cells per row and col
+slider.addEventListener("click", changeSpeed);
+
+randoGenButton.addEventListener("click", randoTreeGen);
 
 insertButton.addEventListener("click", insertVal);
 

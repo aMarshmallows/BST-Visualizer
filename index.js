@@ -46,6 +46,10 @@ function noDuplicatesPopUp(newNodeVal) {
   );
 }
 
+function notANumPopUp() {
+  alert("Please enter a valid integer");
+}
+
 // creates the circle and centers text within
 // different attributes depending if node is a temp animating node or a permanant one
 // id is set only if animating node
@@ -128,15 +132,15 @@ function animateNode2(node, text, startX, startY, endX, endY, speed, callback) {
 function animateLargerSmaller(text, data, speed, callback) {
   let startTime, previousTimeStamp;
   const totalTime = speed / 2;
-  const num = parseInt(text.innerHTML);
+  const num = parseFloat(text.innerHTML);
 
   function step(timestamp) {
     if (startTime === undefined) startTime = timestamp;
     const elapsed = timestamp - startTime;
     if (previousTimeStamp !== timestamp) {
-      if (num > parseInt(data)) {
+      if (num > parseFloat(data)) {
         text.innerHTML = ">";
-      } else if (num < parseInt(data)) {
+      } else if (num < parseFloat(data)) {
         text.innerHTML = "<";
       }
     }
@@ -483,6 +487,7 @@ function removeAllChildNodes(parent) {
   }
 }
 
+// tree will only include integers
 function randoTreeGen() {
   // delete the existing tree
   thisTree = new BinarySearchTree();
@@ -507,16 +512,22 @@ function randoTreeGen() {
 function insertVal() {
   // get new node value from input button
   const newNodeVal = document.getElementById("insertInput").value;
-  console.log(tree.toString());
-  console.log(newNodeVal);
+
+  // if not a number show an error message
+  try {
+    if (isNaN(parseFloat(newNodeVal))) throw "notNum";
+  } catch (error) {
+    notANumPopUp();
+    return;
+  }
 
   // check for duplicates using tree array
-  if (tree.includes(parseInt(newNodeVal))) {
+  if (tree.includes(parseFloat(newNodeVal))) {
     noDuplicatesPopUp(newNodeVal);
   } else {
-    tree.push(parseInt(newNodeVal));
+    tree.push(parseFloat(newNodeVal));
     //createNodeInDOM(newNodeVal, "50", "50");
-    thisTree.insert(parseInt(newNodeVal), true);
+    thisTree.insert(parseFloat(newNodeVal), true);
   }
 }
 
@@ -525,7 +536,7 @@ function findVal() {
   let findVal = document.getElementById("findInput").value;
   console.log("value to find is: " + findVal);
   //createNodeInDOM(newNodeVal, "50", "50");
-  thisTree.find(parseInt(findVal));
+  thisTree.find(parseFloat(findVal));
 }
 
 let thisTree = new BinarySearchTree();

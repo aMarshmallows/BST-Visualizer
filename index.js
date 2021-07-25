@@ -85,55 +85,6 @@ function createNodeInDOM(node, animating) {
   }
 }
 
-function animateNode(parentNode, currNode, isFinalMove) {
-  const currNodeCxInt = parseInt(currNode.cx);
-  const currNodeCyInt = parseInt(currNode.cy);
-  const parentNodeCxInt = parseInt(parentNode.cx);
-  const parentNodeCyInt = parseInt(parentNode.cy);
-  // get elements from DOM to animate - a text element and a circle element
-  const animNode = document.getElementById("animatingNode");
-  const animText = document.getElementById("animatingText");
-
-  // y distance to travel - always positive
-  const diffY = currNodeCyInt - parentNodeCyInt;
-  // x distance to travel, positive if currNode on right of parentNode
-  const diffX = currNodeCxInt - parentNodeCxInt;
-
-  let startTime = 0;
-  const totalTime = 1000; // 1000ms = 1s
-  function animateStep(timestamp) {
-    if (!startTime) startTime = timestamp;
-
-    // progress goes from 0 to 1 over 1s
-    const progress = (timestamp - startTime) / totalTime;
-    // change circle cx and cy values to move diagonally
-    animNode.setAttributeNS(null, "cx", parentNodeCxInt + diffX * progress);
-    animNode.setAttributeNS(
-      null,
-      "cy",
-      parentNodeCyInt - 20 + diffY * progress
-    );
-    // do the same for the text but x and y instead of cx and cy
-    animText.setAttributeNS(null, "x", parentNodeCxInt + diffX * progress);
-    animText.setAttributeNS(null, "y", parentNodeCyInt - 20 + diffY * progress);
-
-    if (progress < 1) {
-      window.requestAnimationFrame(animateStep);
-      console.log("progress happening");
-    } else if (isFinalMove) {
-      console.log("progress complete!");
-      animNode.remove();
-      animText.remove();
-      createNodeInDOM(currNode, false);
-    } else {
-      console.log("progress complete!");
-      animNode.remove();
-      animText.remove();
-    }
-  }
-  window.requestAnimationFrame(animateStep);
-}
-
 function animateNode2(node, text, startX, startY, endX, endY, speed, callback) {
   let startTime, previousTimeStamp;
   // y distance to travel - always positive
@@ -537,30 +488,33 @@ function randoTreeGen() {
   thisTree = new BinarySearchTree();
   removeAllChildNodes(svg);
   tree = [];
-  // num of nodes should be between 3 and 25
-  const numNodes = Math.random() * (25 - 3) + 3; // range is 3 to 25
-  for (let i = 0; i < numNodes; i++) {
-    // node value can be between 1 and 100
-    let nodeVal = Math.random() * (100 - 1) + 1;
 
-    while (tree.includes(nodeVal)) {
-      nodeVal = Math.random() * (100 - 1) + 1;
-    }
+  // num of nodes should be between 3 and 25
+  const numNodes = Math.round(Math.random() * (25 - 3) + 3); // range is 3 to 25
+
+  // for each node get a node value
+  for (let i = 0; i < numNodes; i++) {
+    // ensure no duplicates
+    do {
+      nodeVal = Math.round(Math.random() * (100 - 1) + 1);
+    } while (tree.includes(nodeVal));
+
     tree.push(nodeVal);
-    //createNodeInDOM(newNodeVal, "50", "50");
-    thisTree.insert(parseInt(nodeVal), false);
+    thisTree.insert(nodeVal, false);
   }
 }
 
 function insertVal() {
   // get new node value from input button
   const newNodeVal = document.getElementById("insertInput").value;
+  console.log(tree.toString());
+  console.log(newNodeVal);
 
   // check for duplicates using tree array
-  if (tree.includes(newNodeVal)) {
+  if (tree.includes(parseInt(newNodeVal))) {
     noDuplicatesPopUp(newNodeVal);
   } else {
-    tree.push(newNodeVal);
+    tree.push(parseInt(newNodeVal));
     //createNodeInDOM(newNodeVal, "50", "50");
     thisTree.insert(parseInt(newNodeVal), true);
   }

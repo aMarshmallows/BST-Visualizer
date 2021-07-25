@@ -171,33 +171,60 @@ function animateNode2(node, text, startX, startY, endX, endY, speed, callback) {
   window.requestAnimationFrame(step);
 }
 
-// changes internal text to be smaller or larger depending on if
+// changes internal text to be "<" or ">" depending on if
 // data is smaller or larger than the node it is above
+// changes it back to number value after animation
 function animateLargerSmaller(text, data, speed, callback) {
-  console.log("inside function!");
   let startTime, previousTimeStamp;
   const totalTime = speed / 2;
-  const num = text.innerHTML;
+  const num = parseInt(text.innerHTML);
 
   function step(timestamp) {
     if (startTime === undefined) startTime = timestamp;
     const elapsed = timestamp - startTime;
     if (previousTimeStamp !== timestamp) {
-      // progress goes from 0 to 1 over 1s
-      const progress = (timestamp - startTime) / totalTime;
-      if (parseInt(text.innerHTML) < data) {
-        text.innerHTML = "<";
-      } else {
+      if (num > parseInt(data)) {
         text.innerHTML = ">";
+      } else if (num < parseInt(data)) {
+        text.innerHTML = "<";
       }
     }
 
     if (elapsed < totalTime) {
-      // Stop the animation after 2 seconds
       previousTimeStamp = timestamp;
       window.requestAnimationFrame(step);
     } else {
       text.innerHTML = num;
+      if (callback) {
+        callback();
+      }
+    }
+  }
+  window.requestAnimationFrame(step);
+}
+
+// animate found node with different color to show operation is complete
+function animateFound(domNode, speed, callback) {
+  let startTime, previousTimeStamp;
+  const totalTime = speed / 2;
+  const radius = parseInt(domNode.getAttribute("r")) + 5;
+
+  function step(timestamp) {
+    if (startTime === undefined) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    if (previousTimeStamp !== timestamp) {
+      domNode.setAttributeNS(null, "fill", "blue");
+      domNode.setAttributeNS(null, "r", radius.toString());
+      domNode.setAttributeNS(null, "stroke", "white");
+    }
+
+    if (elapsed < totalTime) {
+      previousTimeStamp = timestamp;
+      window.requestAnimationFrame(step);
+    } else {
+      domNode.setAttributeNS(null, "fill", "yellow");
+      domNode.setAttributeNS(null, "r", (radius - 5).toString());
+      domNode.setAttributeNS(null, "stroke", "green");
       if (callback) {
         callback();
       }
@@ -446,6 +473,8 @@ class BinarySearchTree {
     if (node.data < root.data) {
       if (root.left == null) {
         nodeNotFoundPopUp(node.data);
+        node.domNode.remove();
+        node.domText.remove();
       } else {
         animateLargerSmaller(node.domText, root.data, slider.value, () => {
           animateFind(
@@ -465,6 +494,8 @@ class BinarySearchTree {
     } else if (node.data > root.data) {
       if (root.right == null) {
         nodeNotFoundPopUp(node.data);
+        node.domNode.remove();
+        node.domText.remove();
       } else {
         animateLargerSmaller(node.domText, root.data, slider.value, () => {
           animateFind(
@@ -482,9 +513,9 @@ class BinarySearchTree {
         });
       }
     } else if (node.data == root.data) {
-      console.log("found!");
       node.domNode.remove();
       node.domText.remove();
+      animateFound(root.domNode, slider.value, false);
     }
   }
 }

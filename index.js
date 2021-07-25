@@ -3,7 +3,9 @@ const svgns = "http://www.w3.org/2000/svg";
 const randoGenButton = document.getElementById("randoGenButton");
 const insertButton = document.getElementById("insertButton");
 const findButton = document.getElementById("findButton");
-const deleteButton = document.getElementById("deleteButton");
+const preTravButton = document.getElementById("preTravButton");
+const inTravButton = document.getElementById("inTravButton");
+const postTravButton = document.getElementById("postTravButton");
 let root = null;
 
 class Node {
@@ -169,11 +171,46 @@ function animateNode2(node, text, startX, startY, endX, endY, speed, callback) {
   window.requestAnimationFrame(step);
 }
 
+// changes internal text to be smaller or larger depending on if
+// data is smaller or larger than the node it is above
+function animateLargerSmaller(text, data, speed, callback) {
+  console.log("inside function!");
+  let startTime, previousTimeStamp;
+  const totalTime = speed / 2;
+  const num = text.innerHTML;
+
+  function step(timestamp) {
+    if (startTime === undefined) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    if (previousTimeStamp !== timestamp) {
+      // progress goes from 0 to 1 over 1s
+      const progress = (timestamp - startTime) / totalTime;
+      if (parseInt(text.innerHTML) < data) {
+        text.innerHTML = "<";
+      } else {
+        text.innerHTML = ">";
+      }
+    }
+
+    if (elapsed < totalTime) {
+      // Stop the animation after 2 seconds
+      previousTimeStamp = timestamp;
+      window.requestAnimationFrame(step);
+    } else {
+      text.innerHTML = num;
+      if (callback) {
+        callback();
+      }
+    }
+  }
+  window.requestAnimationFrame(step);
+}
+
 function animateFind(node, text, startX, startY, endX, endY, speed, callback) {
   let startTime, previousTimeStamp;
   // y distance to travel - always positive
   const diffY = endY - startY;
-  // x distance to travel, positive if currNode on right of parentNode
+  // x distance to travel, + if right, - if left
   const diffX = endX - startX;
   const totalTime = speed;
 
@@ -394,27 +431,60 @@ class BinarySearchTree {
   }
 
   find(nodeVal) {
+    const findNode = new Node(nodeVal);
     if (this.root == null) {
       nodeNotFoundPopUp(nodeVal);
     } else {
-      this.findNode(this.root, nodeVal);
+      findNode.cx = "400";
+      findNode.cy = "100";
+      createNodeInDOM(findNode, true);
+      this.findNode(this.root, findNode);
     }
   }
 
-  findNode(root, nodeVal) {
-    if (nodeVal < root.data) {
+  findNode(root, node) {
+    if (node.data < root.data) {
       if (root.left == null) {
-        nodeNotFoundPopUp(nodeVal);
+        nodeNotFoundPopUp(node.data);
       } else {
-        this.findNode(root.left, nodeVal);
+        animateLargerSmaller(node.domText, root.data, slider.value, () => {
+          animateFind(
+            node.domNode,
+            node.domText,
+            parseInt(root.cx),
+            parseInt(root.cy),
+            parseInt(root.left.cx),
+            parseInt(root.left.cy),
+            slider.value,
+            () => {
+              this.findNode(root.left, node);
+            }
+          );
+        });
       }
-    } else if (nodeVal > root.data) {
+    } else if (node.data > root.data) {
       if (root.right == null) {
-        nodeNotFoundPopUp(nodeVal);
+        nodeNotFoundPopUp(node.data);
       } else {
-        this.findNode(root.right, nodeVal);
+        animateLargerSmaller(node.domText, root.data, slider.value, () => {
+          animateFind(
+            node.domNode,
+            node.domText,
+            parseInt(root.cx),
+            parseInt(root.cy),
+            parseInt(root.right.cx),
+            parseInt(root.right.cy),
+            slider.value,
+            () => {
+              this.findNode(root.right, node);
+            }
+          );
+        });
       }
-    } else if (nodeVal == root.data) {
+    } else if (node.data == root.data) {
+      console.log("found!");
+      node.domNode.remove();
+      node.domText.remove();
     }
   }
 }
@@ -432,21 +502,20 @@ function removeAllChildNodes(parent) {
 }
 
 function randoTreeGen() {
+  // delete the existing tree
   thisTree = new BinarySearchTree();
   removeAllChildNodes(svg);
   tree = [];
   // num of nodes should be between 3 and 25
-  // create list of num random numbers between 1 and 100 to enter
-  // do a for loop calling insert but without the animation
   const numNodes = Math.random() * (25 - 3) + 3; // range is 3 to 25
   for (let i = 0; i < numNodes; i++) {
+    // node value can be between 1 and 100
     let nodeVal = Math.random() * (100 - 1) + 1;
 
     while (tree.includes(nodeVal)) {
       nodeVal = Math.random() * (100 - 1) + 1;
     }
     tree.push(nodeVal);
-    console.log("value in node is: " + nodeVal);
     //createNodeInDOM(newNodeVal, "50", "50");
     thisTree.insert(parseInt(nodeVal), false);
   }
@@ -461,7 +530,6 @@ function insertVal() {
     noDuplicatesPopUp(newNodeVal);
   } else {
     tree.push(newNodeVal);
-    console.log("value in node is: " + newNodeVal);
     //createNodeInDOM(newNodeVal, "50", "50");
     thisTree.insert(parseInt(newNodeVal), true);
   }
@@ -469,7 +537,7 @@ function insertVal() {
 
 function findVal() {
   // get new node value from input button
-  var findVal = document.getElementById("findInput").value;
+  let findVal = document.getElementById("findInput").value;
   console.log("value to find is: " + findVal);
   //createNodeInDOM(newNodeVal, "50", "50");
   thisTree.find(parseInt(findVal));
@@ -490,4 +558,4 @@ findButton.addEventListener("click", findVal);
 //<circle cx="50" cy="50" r="25" stroke="green" stroke-width="4" fill="yellow" />
 //<text x="50" y="50" dominant-baseline="middle" text-anchor="middle">TEXT</text>
 //<line x1="400" y1="100" x2="200" y2="180" style="stroke:rgb(0, 0, 0);stroke-width:2" />
-// <line x1="400" y1="100" x2="600" y2="180" style="stroke:rgb(255,0,0);stroke-width:2" />
+// <line x1="400" y1="100" x2="600" y2="180" style="stroke:rgb(255,0,0);stroke-width:2"/

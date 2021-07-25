@@ -16,17 +16,10 @@
     <main>
         <nav>
             <div>
-                <p>Choose One:</p>
-                <div id="treePicker">
-                    <button id="BST" class="buttons">B</button>
-                    <button id="AVL" class="buttons">A</button>
-                </div>
-            </div>
-            <div>
                 <p>Speed</p>
                 <p>Given in seconds per branch</p>
                 <div class="slider">
-                    <input type="range" min="100" max="10000" value="1000" id="slider">
+                    <input type="range" min="100" max="2000" value="1000" id="slider">
                     <div id="SelectValue">1</div>
                 </div>
             </div>
@@ -42,7 +35,9 @@
                 <input id="findInput">
             </div>
 
-            <button id="deleteButton" class="buttons">Delete</button>
+            <button id="preTravButton" class="buttons">Preorder Traversal</button>
+            <button id="inTravButton" class="buttons">Inorder Traversal</button>
+            <button id="postTravButton" class="buttons">Postorder Traversal</button>
         </nav>
         <svg id="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
         </svg>

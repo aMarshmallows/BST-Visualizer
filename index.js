@@ -1,4 +1,5 @@
 const svg = document.getElementById("svg");
+const table = document.getElementById("traversalTable");
 const svgns = "http://www.w3.org/2000/svg";
 const randoGenButton = document.getElementById("randoGenButton");
 const insertButton = document.getElementById("insertButton");
@@ -81,14 +82,15 @@ function createNodeInDOM(node, animating) {
     nodeCircle.setAttribute("fill", "white");
     nodeCircle.setAttribute("r", "15");
     nodeCircle.setAttribute("cx", "400");
-    nodeCircle.setAttribute("cy", "80");
+    nodeCircle.setAttribute("cy", "60");
 
     nodeText.setAttribute("id", "animatingText");
     nodeText.setAttribute("x", "400");
-    nodeText.setAttribute("y", "80");
+    nodeText.setAttribute("y", "60");
   }
 }
 
+// animates the path from one node to another
 function animateNode2(node, text, startX, startY, endX, endY, speed, callback) {
   let startTime, previousTimeStamp;
   // y distance to travel - always positive
@@ -96,7 +98,6 @@ function animateNode2(node, text, startX, startY, endX, endY, speed, callback) {
   // x distance to travel, positive if currNode on right of parentNode
   const diffX = endX - startX;
   const totalTime = speed;
-
   function step(timestamp) {
     if (startTime === undefined) startTime = timestamp;
     const elapsed = timestamp - startTime;
@@ -188,43 +189,42 @@ function animateFound(domNode, speed, callback) {
   window.requestAnimationFrame(step);
 }
 
-function animateFind(node, text, startX, startY, endX, endY, speed, callback) {
+// changes inner text to show which direction is next for the node
+function animatePath(text, dir, speed, callback) {
   let startTime, previousTimeStamp;
-  // y distance to travel - always positive
-  const diffY = endY - startY;
-  // x distance to travel, + if right, - if left
-  const diffX = endX - startX;
-  const totalTime = speed;
+  const totalTime = speed / 2;
 
   function step(timestamp) {
     if (startTime === undefined) startTime = timestamp;
     const elapsed = timestamp - startTime;
 
     if (previousTimeStamp !== timestamp) {
-      // progress goes from 0 to 1 over 1s
-      const progress = (timestamp - startTime) / totalTime;
-      // change circle cx and cy values to move diagonally
-      node.setAttributeNS(null, "cx", startX + diffX * progress);
-      node.setAttributeNS(null, "cy", startY - 20 + diffY * progress);
-      // do the same for the text but x and y instead of cx and cy
-      text.setAttributeNS(null, "x", startX + diffX * progress);
-      text.setAttributeNS(null, "y", startY - 20 + diffY * progress);
+      if (dir == "left") {
+        text.innerHTML = "⇙";
+      } else if (dir == "right") {
+        text.innerHTML = "⇘";
+      } else if (dir == "UnSucc") {
+        text.innerHTML = ":(";
+      } else if (dir == "up") {
+        text.innerHTML = "⇑";
+      }
     }
 
     if (elapsed < totalTime) {
-      // Stop the animation after 2 seconds
       previousTimeStamp = timestamp;
       window.requestAnimationFrame(step);
     } else {
+      text.innerHTML = " ";
+
       if (callback) {
         callback();
       }
     }
   }
-
   window.requestAnimationFrame(step);
 }
 
+// creates edge from one node to another
 function createEdgeInDOM(parentNode, currNode) {
   currNodeCxInt = parseInt(currNode.cx);
   currNodeCyInt = parseInt(currNode.cy);
@@ -284,15 +284,13 @@ class BinarySearchTree {
     this.root = null;
   }
 
-  // creates new node to be inserted and calls insertNode
-  // if animating, will create the temp animating node
   insert(data, animating) {
     const newNode = new Node(data);
     // if root is null then node will
     // be added to the tree and made root.
     if (this.root === null) {
       newNode.cx = "400";
-      newNode.cy = "100";
+      newNode.cy = "80";
       this.root = newNode;
 
       createNodeInDOM(newNode, false);
@@ -336,7 +334,6 @@ class BinarySearchTree {
           createEdgeInDOM(node, newNode);
         }
       } else {
-        //createNodeInDOM(newNode, 1);
         if (animating) {
           animateNode2(
             newNode.domNode,
@@ -355,11 +352,7 @@ class BinarySearchTree {
           this.insertNode(node.left, newNode, height + 1, false);
         }
       }
-    }
-
-    // if the data is more than the node
-    // data move right of the tree
-    else if (newNode.data > node.data) {
+    } else if (newNode.data > node.data) {
       // if right is null insert node here
       if (node.right == null) {
         node.right = newNode;
@@ -390,7 +383,6 @@ class BinarySearchTree {
           createEdgeInDOM(node, newNode);
         }
       } else {
-        //createNodeInDOM(newNode, 1);
         if (animating) {
           animateNode2(
             newNode.domNode,
@@ -418,7 +410,7 @@ class BinarySearchTree {
       nodeNotFoundPopUp(nodeVal);
     } else {
       findNode.cx = "400";
-      findNode.cy = "100";
+      findNode.cy = "80";
       createNodeInDOM(findNode, true);
       this.findNode(this.root, findNode);
     }
@@ -432,7 +424,7 @@ class BinarySearchTree {
         node.domText.remove();
       } else {
         animateLargerSmaller(node.domText, root.data, slider.value, () => {
-          animateFind(
+          animateNode2(
             node.domNode,
             node.domText,
             parseInt(root.cx),
@@ -453,7 +445,7 @@ class BinarySearchTree {
         node.domText.remove();
       } else {
         animateLargerSmaller(node.domText, root.data, slider.value, () => {
-          animateFind(
+          animateNode2(
             node.domNode,
             node.domText,
             parseInt(root.cx),
@@ -472,6 +464,128 @@ class BinarySearchTree {
       node.domText.remove();
       animateFound(root.domNode, slider.value, false);
     }
+  }
+}
+
+function animateArray(textObj, index, callback) {
+  // get square to insert array
+  const cell = document.getElementById("td" + index.toString());
+  cell.innerHTML = textObj.innerHTML;
+
+  if (callback) {
+    callback();
+  }
+}
+
+function iterativePreorder(root) {
+  let counter = 0;
+  // Base Case
+  if (root == null) {
+    return;
+  }
+
+  // Create an empty stack and push root to it
+  var nodeStack = [];
+  nodeStack.push(root);
+  let preOrder123 = window.setInterval(() => {
+    if (nodeStack.length > 0) {
+      // Pop the top item from stack and print it
+      var mynode = nodeStack[nodeStack.length - 1];
+      animateFound(mynode.domNode, slider.value, () => {
+        animateArray(mynode.domText, counter, () => {
+          counter++;
+          nodeStack.pop();
+        });
+
+        // Push right and left children of
+        // the popped node to stack
+        if (mynode.right != null) {
+          nodeStack.push(mynode.right);
+        }
+        if (mynode.left != null) {
+          nodeStack.push(mynode.left);
+        }
+      });
+    } else {
+      window.clearInterval(preOrder123);
+    }
+  }, slider.value);
+}
+
+// only works with leftmost branch rn
+function preOrder2(prevRoot, root, node) {
+  if (root == null) {
+  }
+  console.log("on node " + root.data);
+  if (root.left == null) {
+    console.log("no left");
+    if (root.right == null) {
+      console.log("no right");
+      animatePath(node.domText, "up", slider.value, () => {
+        animateNode2(
+          node.domNode,
+          node.domText,
+          parseInt(root.cx),
+          parseInt(root.cy),
+          parseInt(prevRoot.cx),
+          parseInt(prevRoot.cy),
+          slider.value,
+          () => {
+            console.log("about to go right after I just went up!");
+            preOrder2(prevRoot, prevRoot.right, node);
+          }
+        );
+      });
+    } else {
+      // if root.right is not null
+      animateFound(root.right.domNode, slider.value, () => {
+        animateNode2(
+          node.domNode,
+          node.domText,
+          parseInt(root.cx),
+          parseInt(root.cy),
+          parseInt(root.right.cx),
+          parseInt(root.right.cy),
+          slider.value,
+          () => {
+            console.log("about to go right after I went down right");
+            preOrder2(root, root.right, node);
+          }
+        );
+      });
+    }
+  } else {
+    // if root.left is not null
+    animateFound(root.left.domNode, slider.value, () => {
+      animateNode2(
+        node.domNode,
+        node.domText,
+        parseInt(root.cx),
+        parseInt(root.cy),
+        parseInt(root.left.cx),
+        parseInt(root.left.cy),
+        slider.value,
+        () => {
+          console.log("about to go left!");
+          preOrder2(root, root.left, node);
+        }
+      );
+    });
+  }
+}
+
+function preOrder() {
+  console.log("inside preorder");
+  const len = tree.length;
+  createTravArray(len, preOrderTravHelper);
+}
+
+function preOrderTravHelper() {
+  if (thisTree.root == null) {
+    return;
+  } else {
+    iterativePreorder(thisTree.root);
+    //preOrderTrav2(thisTree.root);
   }
 }
 
@@ -531,6 +645,9 @@ function insertVal() {
   }
 }
 
+let thisTree = new BinarySearchTree();
+let tree = [];
+
 function findVal() {
   // get new node value from input button
   let findVal = document.getElementById("findInput").value;
@@ -539,8 +656,25 @@ function findVal() {
   thisTree.find(parseFloat(findVal));
 }
 
-let thisTree = new BinarySearchTree();
-let tree = [];
+// creates array to hold in traversal numbers
+function createTravArray(len, callback) {
+  // repaints array to have current number of nodes as cells
+  removeAllChildNodes(table);
+  const tr = document.createElement("tr");
+  // create row to hold cells
+  table.appendChild(tr);
+  // append cells to row
+  for (let i = 0; i < len; i++) {
+    let cell_name = "td" + i.toString();
+    let td = document.createElement(cell_name);
+    td.setAttribute("id", cell_name);
+    tr.appendChild(td).classList.add("cells");
+  }
+
+  if (callback) {
+    callback();
+  }
+}
 
 // slider value gives num of grid cells per row and col
 slider.addEventListener("click", changeSpeed);
@@ -551,7 +685,4 @@ insertButton.addEventListener("click", insertVal);
 
 findButton.addEventListener("click", findVal);
 
-//<circle cx="50" cy="50" r="25" stroke="green" stroke-width="4" fill="yellow" />
-//<text x="50" y="50" dominant-baseline="middle" text-anchor="middle">TEXT</text>
-//<line x1="400" y1="100" x2="200" y2="180" style="stroke:rgb(0, 0, 0);stroke-width:2" />
-// <line x1="400" y1="100" x2="600" y2="180" style="stroke:rgb(255,0,0);stroke-width:2"/
+preTravButton.addEventListener("click", preOrder);

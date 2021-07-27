@@ -481,7 +481,6 @@ function addToArray(text, index, callback) {
 }
 
 function iterativePreorder(root) {
-  randoGenButton.setAttribute("disabled", "true");
   let counter = 0;
   // Base Case
   if (root == null) {
@@ -514,12 +513,9 @@ function iterativePreorder(root) {
       window.clearInterval(preOrder123);
     }
   }, slider.value);
-
-  randoGenButton.setAttribute("disabled", "false");
 }
 
 function iterativePostorder(root) {
-  randoGenButton.setAttribute("disabled", "true");
   // Two stacks as used in explanation
   // Create two stacks
   let s1 = [];
@@ -555,11 +551,9 @@ function iterativePostorder(root) {
       window.clearInterval(postOrder123);
     }
   }, slider.value);
-  randoGenButton.setAttribute("disabled", "false");
 }
 
 function iterativeInorder(root) {
-  randoGenButton.setAttribute("disabled", "true");
   let counter = 0;
   if (root == null) {
     return;
@@ -585,7 +579,6 @@ function iterativeInorder(root) {
       mynode = mynode.right;
     }
   }, slider.value);
-  randoGenButton.setAttribute("disabled", "false");
 }
 
 function preOrderTravHelper() {

@@ -467,7 +467,7 @@ class BinarySearchTree {
   }
 }
 
-function animateArray(textObj, index, callback) {
+function addToArray(textObj, index, callback) {
   // get square to insert array
   const cell = document.getElementById("td" + index.toString());
   cell.innerHTML = textObj.innerHTML;
@@ -490,9 +490,9 @@ function iterativePreorder(root) {
   let preOrder123 = window.setInterval(() => {
     if (nodeStack.length > 0) {
       // Pop the top item from stack and print it
-      var mynode = nodeStack[nodeStack.length - 1];
+      let mynode = nodeStack[nodeStack.length - 1];
       animateFound(mynode.domNode, slider.value, () => {
-        animateArray(mynode.domText, counter, () => {
+        addToArray(mynode.domText, counter, () => {
           counter++;
           nodeStack.pop();
         });
@@ -512,81 +512,77 @@ function iterativePreorder(root) {
   }, slider.value);
 }
 
-// only works with leftmost branch rn
-function preOrder2(prevRoot, root, node) {
-  if (root == null) {
-  }
-  console.log("on node " + root.data);
-  if (root.left == null) {
-    console.log("no left");
-    if (root.right == null) {
-      console.log("no right");
-      animatePath(node.domText, "up", slider.value, () => {
-        animateNode2(
-          node.domNode,
-          node.domText,
-          parseInt(root.cx),
-          parseInt(root.cy),
-          parseInt(prevRoot.cx),
-          parseInt(prevRoot.cy),
-          slider.value,
-          () => {
-            console.log("about to go right after I just went up!");
-            preOrder2(prevRoot, prevRoot.right, node);
-          }
-        );
-      });
-    } else {
-      // if root.right is not null
-      animateFound(root.right.domNode, slider.value, () => {
-        animateNode2(
-          node.domNode,
-          node.domText,
-          parseInt(root.cx),
-          parseInt(root.cy),
-          parseInt(root.right.cx),
-          parseInt(root.right.cy),
-          slider.value,
-          () => {
-            console.log("about to go right after I went down right");
-            preOrder2(root, root.right, node);
-          }
-        );
-      });
-    }
-  } else {
-    // if root.left is not null
-    animateFound(root.left.domNode, slider.value, () => {
-      animateNode2(
-        node.domNode,
-        node.domText,
-        parseInt(root.cx),
-        parseInt(root.cy),
-        parseInt(root.left.cx),
-        parseInt(root.left.cy),
-        slider.value,
-        () => {
-          console.log("about to go left!");
-          preOrder2(root, root.left, node);
-        }
-      );
-    });
-  }
-}
+function iterativePostorder(node) {
+  let counter = 0;
+  let nodeStack = [];
 
-function preOrder() {
-  console.log("inside preorder");
-  const len = tree.length;
-  createTravArray(len, preOrderTravHelper);
+  // Check for empty tree
+  if (node == null) return nodeStack;
+  nodeStack.push(node);
+  let prev = null;
+  let postOrder123 = window.setInterval(() => {
+    if (nodeStack.length != 0) {
+      let mynode = nodeStack[nodeStack.length - 1];
+
+      /* go down the tree in search of a leaf an if so process it
+            and pop stack otherwise move down */
+      if (prev == null || prev.left == mynode || prev.right == mynode) {
+        if (mynode.left != null) {
+          nodeStack.push(mynode.left);
+        } else if (mynode.right != null) {
+          nodeStack.push(mynode.right);
+        } else {
+          animateFound(mynode.domNode, slider.value * 2, () => {
+            addToArray(mynode.domText, counter, () => {
+              counter++;
+              nodeStack.pop();
+            });
+          });
+        }
+
+        /* go up the tree from left node, if the child is right
+                push it onto stack otherwise process parent and pop
+                stack */
+      } else if (mynode.left == prev) {
+        if (mynode.right != null) {
+          nodeStack.push(mynode.right);
+        } else {
+          animateFound(mynode.domNode, slider.value * 2, () => {
+            addToArray(mynode.domText, counter, () => {
+              counter++;
+              nodeStack.pop();
+            });
+          });
+        }
+
+        /* go up the tree from right node and after coming back
+                from right node process parent and pop stack */
+      } else if (mynode.right == prev) {
+        animateFound(mynode.domNode, slider.value * 2, () => {
+          addToArray(mynode.domText, counter, () => {
+            counter++;
+            nodeStack.pop();
+          });
+        });
+      }
+
+      prev = mynode;
+    } else {
+      window.clearInterval(postOrder123);
+    }
+  }, slider.value / 2);
 }
 
 function preOrderTravHelper() {
-  if (thisTree.root == null) {
-    return;
-  } else {
-    iterativePreorder(thisTree.root);
-    //preOrderTrav2(thisTree.root);
-  }
+  iterativePreorder(thisTree.root);
+}
+
+function inOrderTravHelper() {
+  iterativeInorder(thisTree.root);
+}
+
+function postOrderTravHelper() {
+  iterativePostorder(thisTree.root);
 }
 
 function changeSpeed() {
@@ -602,6 +598,7 @@ function removeAllChildNodes(parent) {
 }
 
 // tree will only include integers
+// generates a random tree
 function randoTreeGen() {
   // delete the existing tree
   thisTree = new BinarySearchTree();
@@ -651,7 +648,6 @@ let tree = [];
 function findVal() {
   // get new node value from input button
   let findVal = document.getElementById("findInput").value;
-  console.log("value to find is: " + findVal);
   //createNodeInDOM(newNodeVal, "50", "50");
   thisTree.find(parseFloat(findVal));
 }
@@ -685,4 +681,18 @@ insertButton.addEventListener("click", insertVal);
 
 findButton.addEventListener("click", findVal);
 
-preTravButton.addEventListener("click", preOrder);
+preTravButton.addEventListener("click", function preOrder() {
+  console.log("inside preorder");
+  const len = tree.length;
+  createTravArray(len, preOrderTravHelper);
+});
+
+inTravButton.addEventListener("click", function inOrder() {
+  const len = tree.length;
+  createTravArray(len, inOrderTravHelper);
+});
+
+postTravButton.addEventListener("click", function postOrder() {
+  const len = tree.length;
+  createTravArray(len, postOrderTravHelper);
+});

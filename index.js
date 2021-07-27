@@ -467,10 +467,10 @@ class BinarySearchTree {
   }
 }
 
-function addToArray(textObj, index, callback) {
+function addToArray(text, index, callback) {
   // get square to insert array
   const cell = document.getElementById("td" + index.toString());
-  cell.innerHTML = textObj.innerHTML;
+  cell.innerHTML = text;
 
   if (callback) {
     callback();
@@ -492,7 +492,7 @@ function iterativePreorder(root) {
       // Pop the top item from stack and print it
       let mynode = nodeStack[nodeStack.length - 1];
       animateFound(mynode.domNode, slider.value, () => {
-        addToArray(mynode.domText, counter, () => {
+        addToArray(mynode.domText.innerHTML, counter, () => {
           counter++;
           nodeStack.pop();
         });
@@ -511,7 +511,7 @@ function iterativePreorder(root) {
     }
   }, slider.value);
 }
-
+/*
 function iterativePostorder(node) {
   let counter = 0;
   let nodeStack = [];
@@ -524,8 +524,8 @@ function iterativePostorder(node) {
     if (nodeStack.length != 0) {
       let mynode = nodeStack[nodeStack.length - 1];
 
-      /* go down the tree in search of a leaf an if so process it
-            and pop stack otherwise move down */
+      //go down the tree in search of a leaf an if so process it
+            //and pop stack otherwise move down
       if (prev == null || prev.left == mynode || prev.right == mynode) {
         if (mynode.left != null) {
           nodeStack.push(mynode.left);
@@ -533,33 +533,31 @@ function iterativePostorder(node) {
           nodeStack.push(mynode.right);
         } else {
           animateFound(mynode.domNode, slider.value * 2, () => {
-            addToArray(mynode.domText, counter, () => {
+            addToArray(mynode.domText.innerHTML, counter, () => {
               counter++;
               nodeStack.pop();
             });
           });
         }
 
-        /* go up the tree from left node, if the child is right
-                push it onto stack otherwise process parent and pop
-                stack */
+        // go up the tree from left node, if the child is right
+        // push it onto stack otherwise process parent and popstack
       } else if (mynode.left == prev) {
         if (mynode.right != null) {
           nodeStack.push(mynode.right);
         } else {
           animateFound(mynode.domNode, slider.value * 2, () => {
-            addToArray(mynode.domText, counter, () => {
+            addToArray(mynode.domText.innerHTML, counter, () => {
               counter++;
               nodeStack.pop();
             });
           });
         }
 
-        /* go up the tree from right node and after coming back
-                from right node process parent and pop stack */
+        
       } else if (mynode.right == prev) {
         animateFound(mynode.domNode, slider.value * 2, () => {
-          addToArray(mynode.domText, counter, () => {
+          addToArray(mynode.domText.innerHTML, counter, () => {
             counter++;
             nodeStack.pop();
           });
@@ -571,6 +569,74 @@ function iterativePostorder(node) {
       window.clearInterval(postOrder123);
     }
   }, slider.value / 2);
+}
+*/
+function iterativePostorder(root) {
+  // Two stacks as used in explanation
+  // Create two stacks
+  var s1 = [];
+  var s2 = [];
+
+  if (root == null) return;
+
+  // Push root to first stack
+  s1.push(root);
+
+  // Run while first stack is not empty
+  while (s1.length > 0) {
+    // Pop an item from s1 and Push it to s2
+    var temp = s1.pop();
+    s2.push(temp);
+
+    // Push left and right children of
+    // removed item to s1
+    if (temp.left != null) s1.push(temp.left);
+    if (temp.right != null) s1.push(temp.right);
+  }
+  let counter = 0;
+  // Print all elements of second stack
+  let postOrder123 = window.setInterval(() => {
+    if (s2.length > 0) {
+      var temp = s2[s2.length - 1];
+      animateFound(temp.domNode, slider.value * 2, () => {
+        addToArray(temp.domText.innerHTML, counter, () => {
+          counter++;
+          s2.pop();
+        });
+      });
+    } else {
+      window.clearInterval(postOrder123);
+    }
+  }, slider.value);
+}
+
+function iterativeInorder(root) {
+  let counter = 0;
+  if (root == null) {
+    return;
+  }
+
+  nodeStack = [];
+  let mynode = root;
+  let postOrder123 = window.setInterval(() => {
+    if (mynode != null || nodeStack.length > 0) {
+      while (mynode != null) {
+        nodeStack.push(mynode);
+        mynode = mynode.left;
+      }
+
+      mynode = nodeStack.pop();
+      console.log(mynode.data);
+      let text = mynode.domText.innerHTML;
+      animateFound(mynode.domNode, slider.value * 2, () => {
+        addToArray(text, counter, () => {
+          counter++;
+        });
+      });
+      // deal with current
+      mynode = mynode.right;
+    }
+  }, slider.value);
 }
 
 function preOrderTravHelper() {

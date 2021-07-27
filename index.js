@@ -511,71 +511,12 @@ function iterativePreorder(root) {
     }
   }, slider.value);
 }
-/*
-function iterativePostorder(node) {
-  let counter = 0;
-  let nodeStack = [];
 
-  // Check for empty tree
-  if (node == null) return nodeStack;
-  nodeStack.push(node);
-  let prev = null;
-  let postOrder123 = window.setInterval(() => {
-    if (nodeStack.length != 0) {
-      let mynode = nodeStack[nodeStack.length - 1];
-
-      //go down the tree in search of a leaf an if so process it
-            //and pop stack otherwise move down
-      if (prev == null || prev.left == mynode || prev.right == mynode) {
-        if (mynode.left != null) {
-          nodeStack.push(mynode.left);
-        } else if (mynode.right != null) {
-          nodeStack.push(mynode.right);
-        } else {
-          animateFound(mynode.domNode, slider.value * 2, () => {
-            addToArray(mynode.domText.innerHTML, counter, () => {
-              counter++;
-              nodeStack.pop();
-            });
-          });
-        }
-
-        // go up the tree from left node, if the child is right
-        // push it onto stack otherwise process parent and popstack
-      } else if (mynode.left == prev) {
-        if (mynode.right != null) {
-          nodeStack.push(mynode.right);
-        } else {
-          animateFound(mynode.domNode, slider.value * 2, () => {
-            addToArray(mynode.domText.innerHTML, counter, () => {
-              counter++;
-              nodeStack.pop();
-            });
-          });
-        }
-
-        
-      } else if (mynode.right == prev) {
-        animateFound(mynode.domNode, slider.value * 2, () => {
-          addToArray(mynode.domText.innerHTML, counter, () => {
-            counter++;
-            nodeStack.pop();
-          });
-        });
-      }
-
-      prev = mynode;
-    } else {
-      window.clearInterval(postOrder123);
-    }
-  }, slider.value / 2);
-}
-*/
 function iterativePostorder(root) {
   // Two stacks as used in explanation
   // Create two stacks
-  var s1 = [];
-  var s2 = [];
+  let s1 = [];
+  let s2 = [];
 
   if (root == null) return;
 
@@ -585,7 +526,7 @@ function iterativePostorder(root) {
   // Run while first stack is not empty
   while (s1.length > 0) {
     // Pop an item from s1 and Push it to s2
-    var temp = s1.pop();
+    let temp = s1.pop();
     s2.push(temp);
 
     // Push left and right children of
@@ -597,11 +538,10 @@ function iterativePostorder(root) {
   // Print all elements of second stack
   let postOrder123 = window.setInterval(() => {
     if (s2.length > 0) {
-      var temp = s2[s2.length - 1];
-      animateFound(temp.domNode, slider.value * 2, () => {
-        addToArray(temp.domText.innerHTML, counter, () => {
+      let mynode = s2.pop(); //s2[s2.length - 1];
+      animateFound(mynode.domNode, slider.value, () => {
+        addToArray(mynode.domText.innerHTML, counter, () => {
           counter++;
-          s2.pop();
         });
       });
     } else {
@@ -626,9 +566,8 @@ function iterativeInorder(root) {
       }
 
       mynode = nodeStack.pop();
-      console.log(mynode.data);
       let text = mynode.domText.innerHTML;
-      animateFound(mynode.domNode, slider.value * 2, () => {
+      animateFound(mynode.domNode, slider.value, () => {
         addToArray(text, counter, () => {
           counter++;
         });
@@ -671,6 +610,10 @@ function randoTreeGen() {
   removeAllChildNodes(svg);
   tree = [];
 
+  if (table.firstChild) {
+    removeAllChildNodes(table);
+  }
+
   // num of nodes should be between 3 and 25
   const numNodes = Math.round(Math.random() * (25 - 3) + 3); // range is 3 to 25
 
@@ -687,6 +630,9 @@ function randoTreeGen() {
 }
 
 function insertVal() {
+  if (table.firstChild) {
+    removeAllChildNodes(table);
+  }
   // get new node value from input button
   const newNodeVal = document.getElementById("insertInput").value;
 

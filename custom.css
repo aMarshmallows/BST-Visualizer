@@ -1,19 +1,24 @@
 header {
-  width: 100%;
-  height: 125px;
-  background-color: antiquewhite;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100px;
+  background-color: #d8e2dc;
+  color: #5d464d;
 }
 
 body {
   width: 100%;
+  font-family: Helvetica, sans-serif;
+  color: #5d464d;
 }
 
 main {
   display: flex;
   width: 100%;
-  height: 800px;
-  background-color: aqua;
+  height: 900px;
+  background-color: #e0b1cb;
   justify-content: center;
 }
 
@@ -21,10 +26,34 @@ nav {
   display: flex;
   flex-direction: column;
   width: 400px;
-  height: 800px;
-  background-color: green;
+  height: 830px;
+  background-color: #9d8189;
   padding: 10px;
   justify-content: space-around;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  padding: 10px;
+  gap: 15px;
+  align-items: center;
+  justify-content: center;
+}
+
+#sliderContainer {
+  justify-content: center;
+  align-items: center;
+  margin: 0px;
+  padding: 10px;
+  background-color: #ffe5d9;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+}
+
+#speed {
+  font-size: 20px;
 }
 
 .slider {
@@ -34,6 +63,7 @@ nav {
   width: 100%;
   align-items: center;
   justify-content: center;
+
   padding: 10px;
 }
 #slider {
@@ -42,7 +72,7 @@ nav {
   height: 7px;
   outline: none;
   border-radius: 3px;
-  background: rgb(240, 113, 9);
+  background: #f4acb7;
 }
 
 #slider::-webkit-slider-thumb {
@@ -56,24 +86,24 @@ nav {
 }
 
 #SelectValue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 35px;
   height: 22.5px;
   top: 0;
-  background-color: #8fd63e;
+  background-color: #d8e2dc;
   border-radius: 4px;
-  text-align: center;
   font-size: 20px;
   font-weight: bold;
-  color: rgb(71, 28, 22);
-  font-family: "Courier New", "Courier", serif;
+  color: #5d464d;
 }
 
 .buttons {
-  background-color: #8fd63e;
+  background-color: #ffe5d9;
   border: 0;
   border-radius: 4px;
-  color: rgb(71, 28, 22);
-  font-family: "Courier New", "Courier", serif;
+  color: #5d464d;
   font-weight: bold;
   padding: 15px 32px;
   text-align: center;
@@ -84,14 +114,38 @@ nav {
 }
 
 .buttons:hover {
-  background-color: #6cca63;
+  background-color: #f4acb7;
 }
 input {
   height: 48.5px;
+  border-radius: 4px;
+  background-color: #f6f4d2;
+  color: #5d464d;
+  text-indent: 4px;
+  border: none;
+}
+
+table,
+tr {
+  width: 100%;
+  height: 30px;
+  background-color: #ffcad4;
+  padding: 0px;
+  justify-content: center;
+  text-align: center;
+}
+
+.cells {
+  display: table-cell;
+  vertical-align: inherit;
+  border: 1px solid black;
+  border-radius: 4px;
+  border-bottom: 1px solid black;
+  background-color: #f4acb7;
 }
 
 svg {
   width: 800px;
-  height: 800px;
-  background-color: pink;
+  height: 820px;
+  background-color: #ffcad4;
 }

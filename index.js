@@ -48,7 +48,7 @@ function noDuplicatesPopUp(newNodeVal) {
 }
 
 function notANumPopUp() {
-  alert("Please enter a valid integer");
+  alert("Please enter a valid number");
 }
 
 // creates the circle and centers text within
@@ -64,9 +64,9 @@ function createNodeInDOM(node, animating) {
   nodeCircle.setAttribute("cx", node.cx);
   nodeCircle.setAttribute("cy", node.cy);
   nodeCircle.setAttribute("r", getRadius(node.cy).toString());
-  nodeCircle.setAttribute("stroke", "green");
+  nodeCircle.setAttribute("stroke", "#C4D4C9");
   nodeCircle.setAttribute("stroke-width", "2");
-  nodeCircle.setAttribute("fill", "yellow");
+  nodeCircle.setAttribute("fill", "#f6f4d2");
 
   const nodeText = document.createElementNS(svgns, "text");
   node.domText = nodeText;
@@ -75,11 +75,12 @@ function createNodeInDOM(node, animating) {
   nodeText.setAttribute("y", node.cy);
   nodeText.setAttribute("dominant-baseline", "middle");
   nodeText.setAttribute("text-anchor", "middle");
+  nodeText.setAttribute("fill", "#231B1D");
   nodeText.innerHTML = node.data;
 
   if (animating) {
     nodeCircle.setAttribute("id", "animatingNode");
-    nodeCircle.setAttribute("fill", "white");
+    nodeCircle.setAttribute("fill", "#F3F6F4");
     nodeCircle.setAttribute("r", "15");
     nodeCircle.setAttribute("cx", "400");
     nodeCircle.setAttribute("cy", "60");
@@ -160,7 +161,7 @@ function animateLargerSmaller(text, data, speed, callback) {
 }
 
 // animate found node with different color to show operation is complete
-function animateFound(domNode, speed, callback) {
+function animateFound(domNode, domText, speed, callback) {
   let startTime, previousTimeStamp;
   const totalTime = speed / 2;
   const radius = parseInt(domNode.getAttribute("r")) + 5;
@@ -169,18 +170,20 @@ function animateFound(domNode, speed, callback) {
     if (startTime === undefined) startTime = timestamp;
     const elapsed = timestamp - startTime;
     if (previousTimeStamp !== timestamp) {
-      domNode.setAttributeNS(null, "fill", "blue");
+      domNode.setAttributeNS(null, "fill", "#9d8189");
       domNode.setAttributeNS(null, "r", radius.toString());
       domNode.setAttributeNS(null, "stroke", "white");
+      domText.setAttributeNS(null, "fill", "#f6f4d2");
     }
 
     if (elapsed < totalTime) {
       previousTimeStamp = timestamp;
       window.requestAnimationFrame(step);
     } else {
-      domNode.setAttributeNS(null, "fill", "yellow");
+      domNode.setAttributeNS(null, "fill", "#f6f4d2");
       domNode.setAttributeNS(null, "r", (radius - 5).toString());
-      domNode.setAttributeNS(null, "stroke", "green");
+      domNode.setAttributeNS(null, "stroke", "#C4D4C9");
+      domText.setAttributeNS(null, "fill", "#231B1D");
       if (callback) {
         callback();
       }
@@ -241,7 +244,7 @@ function createEdgeInDOM(parentNode, currNode) {
 
   const edge = document.createElementNS(svgns, "line");
   svg.appendChild(edge);
-  edge.setAttribute("style", "stroke:rgb(0,0,0);stroke-width:3");
+  edge.setAttribute("style", "stroke:#5D464D;stroke-width:3");
 
   // gets radius of currNode and parentNode
   currRadius = getRadius(currNode.cy);
@@ -462,7 +465,7 @@ class BinarySearchTree {
     } else if (node.data == root.data) {
       node.domNode.remove();
       node.domText.remove();
-      animateFound(root.domNode, slider.value, false);
+      animateFound(root.domNode, root.domText, slider.value, false);
     }
   }
 }
@@ -491,7 +494,7 @@ function iterativePreorder(root) {
     if (nodeStack.length > 0) {
       // Pop the top item from stack and print it
       let mynode = nodeStack[nodeStack.length - 1];
-      animateFound(mynode.domNode, slider.value, () => {
+      animateFound(mynode.domNode, mynode.domText, slider.value, () => {
         addToArray(mynode.domText.innerHTML, counter, () => {
           counter++;
           nodeStack.pop();
@@ -539,7 +542,7 @@ function iterativePostorder(root) {
   let postOrder123 = window.setInterval(() => {
     if (s2.length > 0) {
       let mynode = s2.pop(); //s2[s2.length - 1];
-      animateFound(mynode.domNode, slider.value, () => {
+      animateFound(mynode.domNode, mynode.domText, slider.value, () => {
         addToArray(mynode.domText.innerHTML, counter, () => {
           counter++;
         });
@@ -567,7 +570,7 @@ function iterativeInorder(root) {
 
       mynode = nodeStack.pop();
       let text = mynode.domText.innerHTML;
-      animateFound(mynode.domNode, slider.value, () => {
+      animateFound(mynode.domNode, mynode.domText, slider.value, () => {
         addToArray(text, counter, () => {
           counter++;
         });
@@ -660,6 +663,13 @@ let tree = [];
 function findVal() {
   // get new node value from input button
   let findVal = document.getElementById("findInput").value;
+  // if not a number show an error message
+  try {
+    if (isNaN(parseFloat(findVal))) throw "notNum";
+  } catch (error) {
+    notANumPopUp();
+    return;
+  }
   //createNodeInDOM(newNodeVal, "50", "50");
   thisTree.find(parseFloat(findVal));
 }

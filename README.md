@@ -1,5 +1,5 @@
 # BST-Visualizer
-Welcome to the BST Visualizer! I built this application because I wanted to create a tool that helps students like myself visualize how a binary search tree (BST) works. Seeing a data structure in action has always been helpful personally when trying to understand why and where they might be used in applications. Check out the live demo here (use Google Chrome!) : https://amarshmallows.github.io/BST-Visualizer/
+Welcome to the BST Visualizer! I built this application because I wanted to create a tool that helps students like myself visualize how a binary search tree (BST) works. Seeing a data structure in action has always been helpful personally when trying to understand why and where they might be used in applications. Check out the live demo here (use Google Chrome and not through a mobile browser!) : https://amarshmallows.github.io/BST-Visualizer/
 ### Overview ###
 This BST Visualizer allows for search and insertion as well as preorder, inorder and postorder traversals. Change the speed of the animation using the slider at the top of the left nav bar. Once you click on a traversal algorithm, an array will appear above the tree and take account of which elements have been traversed.
 ### Next Steps ###

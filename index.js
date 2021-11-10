@@ -192,41 +192,6 @@ function animateFound(domNode, domText, speed, callback) {
   window.requestAnimationFrame(step);
 }
 
-// changes inner text to show which direction is next for the node
-function animatePath(text, dir, speed, callback) {
-  let startTime, previousTimeStamp;
-  const totalTime = speed / 2;
-
-  function step(timestamp) {
-    if (startTime === undefined) startTime = timestamp;
-    const elapsed = timestamp - startTime;
-
-    if (previousTimeStamp !== timestamp) {
-      if (dir == "left") {
-        text.innerHTML = "⇙";
-      } else if (dir == "right") {
-        text.innerHTML = "⇘";
-      } else if (dir == "UnSucc") {
-        text.innerHTML = ":(";
-      } else if (dir == "up") {
-        text.innerHTML = "⇑";
-      }
-    }
-
-    if (elapsed < totalTime) {
-      previousTimeStamp = timestamp;
-      window.requestAnimationFrame(step);
-    } else {
-      text.innerHTML = " ";
-
-      if (callback) {
-        callback();
-      }
-    }
-  }
-  window.requestAnimationFrame(step);
-}
-
 // creates edge from one node to another
 function createEdgeInDOM(parentNode, currNode) {
   currNodeCxInt = parseInt(currNode.cx);
@@ -511,6 +476,9 @@ function iterativePreorder(root) {
       });
     } else {
       window.clearInterval(preOrder123);
+      preTravButton.disabled = false;
+      inTravButton.disabled = false;
+      postTravButton.disabled = false;
     }
   }, slider.value);
 }
@@ -549,6 +517,9 @@ function iterativePostorder(root) {
       });
     } else {
       window.clearInterval(postOrder123);
+      preTravButton.disabled = false;
+      inTravButton.disabled = false;
+      postTravButton.disabled = false;
     }
   }, slider.value);
 }
@@ -561,7 +532,7 @@ function iterativeInorder(root) {
 
   nodeStack = [];
   let mynode = root;
-  let postOrder123 = window.setInterval(() => {
+  let inOrder123 = window.setInterval(() => {
     if (mynode != null || nodeStack.length > 0) {
       while (mynode != null) {
         nodeStack.push(mynode);
@@ -577,6 +548,11 @@ function iterativeInorder(root) {
       });
       // deal with current
       mynode = mynode.right;
+    } else {
+      window.clearInterval(inOrder123);
+      preTravButton.disabled = false;
+      inTravButton.disabled = false;
+      postTravButton.disabled = false;
     }
   }, slider.value);
 }
@@ -706,15 +682,24 @@ findButton.addEventListener("click", findVal);
 preTravButton.addEventListener("click", function preOrder() {
   console.log("inside preorder");
   const len = tree.length;
+  preTravButton.disabled = true;
+  inTravButton.disabled = true;
+  postTravButton.disabled = true;
   createTravArray(len, preOrderTravHelper);
 });
 
 inTravButton.addEventListener("click", function inOrder() {
   const len = tree.length;
+  preTravButton.disabled = true;
+  inTravButton.disabled = true;
+  postTravButton.disabled = true;
   createTravArray(len, inOrderTravHelper);
 });
 
 postTravButton.addEventListener("click", function postOrder() {
   const len = tree.length;
+  preTravButton.disabled = true;
+  inTravButton.disabled = true;
+  postTravButton.disabled = true;
   createTravArray(len, postOrderTravHelper);
 });
